@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Application — Candidate Docket</title>
+<style>
+  :root{
+    --ink: #1c2b3a;
+    --paper: #f6f4ee;
+    --panel: #ffffff;
+    --line: #d8d4c6;
+    --amber: #c17f2b;
+    --amber-deep: #a5641a;
+    --ok-green: #3f6b4f;
+    --muted: #6b7280;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin:0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Georgia', 'Iowan Old Style', serif;
+    padding: 48px 20px 80px;
+  }
+
+  .sheet{
+    max-width: 760px;
+    margin: 0 auto;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    box-shadow: 0 1px 0 rgba(28,43,58,0.04), 0 12px 30px -18px rgba(28,43,58,0.25);
+  }
+
+  .letterhead{
+    display:flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 40px 48px 24px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .letterhead .eyebrow{
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--amber-deep);
+    margin: 0 0 8px;
+    font-weight: 700;
+  }
+
+  .letterhead h1{
+    margin: 0;
+    font-size: 32px;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+  }
+
+  .docket-no{
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  form{ padding: 8px 48px 48px; }
+
+  .section-label{
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 36px 0 4px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .section-label:first-of-type{ margin-top: 28px; }
+
+  .field{
+    margin-top: 22px;
+  }
+
+  label{
+    display:flex;
+    align-items: baseline;
+    gap: 6px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 7px;
+  }
+
+  label .req{
+    color: var(--amber-deep);
+    font-size: 12px;
+  }
+
+  label .opt{
+    font-weight: 400;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="url"],
+  select,
+  textarea{
+    width: 100%;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 11px 12px;
+    transition: border-color .15s ease, background .15s ease;
+  }
+
+  textarea{
+    min-height: 110px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+
+  input:focus, select:focus, textarea:focus{
+    outline: none;
+    border-color: var(--amber-deep);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(193,127,43,0.15);
+  }
+
+  select{
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231c2b3a' stroke-width='1.5' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  .file-drop{
+    border: 1.5px dashed var(--line);
+    border-radius: 2px;
+    padding: 22px;
+    text-align: center;
+    background: var(--paper);
+    cursor: pointer;
+    transition: border-color .15s ease, background .15s ease;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+  }
+  .file-drop:hover{ border-color: var(--amber-deep); }
+  .file-drop input{ display:none; }
+  .file-drop .hint{ font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .file-drop .filename{
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--ok-green);
+    font-weight: 600;
+    display: none;
+  }
+
+  .row-2{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 620px){
+    .row-2{ grid-template-columns: 1fr; }
+    .letterhead{ flex-direction: column; align-items: flex-start; gap: 12px; }
+    .docket-no{ text-align: left; }
+    form{ padding: 8px 26px 40px; }
+    .letterhead{ padding: 32px 26px 20px; }
+  }
+
+  .error-msg{
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12.5px;
+    color: #a13d3d;
+    margin-top: 6px;
+    display: none;
+  }
+  .field.invalid input,
+  .field.invalid select,
+  .field.invalid .file-drop{
+    border-color: #a13d3d;
+  }
+  .field.invalid .error-msg{ display: block; }
+
+  .submit-row{
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 2px solid var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .fine-print{
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    max-width: 340px;
+    line-height: 1.5;
+  }
+
+  button.submit{
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--ink);
+    border: none;
+    padding: 15px 30px;
+    cursor: pointer;
+    border-radius: 2px;
+    white-space: nowrap;
+    transition: background .15s ease;
+  }
+  button.submit:hover{ background: #0f1b26; }
+
+  .success-panel{
+    display:none;
+    padding: 60px 48px;
+    text-align: center;
+  }
+  .success-panel .stamp{
+    display:inline-block;
+    border: 3px solid var(--ok-green);
+    color: var(--ok-green);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-size: 13px;
+    padding: 8px 18px;
+    transform: rotate(-3deg);
+    margin-bottom: 20px;
+  }
+  .success-panel h2{ margin: 0 0 10px; font-weight: 400; }
+  .success-panel p{ color: var(--muted); font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="letterhead">
+    <div>
+      <p class="eyebrow">Candidate Docket</p>
+      <h1>Job Application Form</h1>
+    </div>
+    <div class="docket-no">
+      Ref. No. <span id="refNo"></span><br>
+      Opened <span id="todayDate"></span>
+    </div>
+  </div>
+
+  <form id="appForm" novalidate>
+
+    <p class="section-label">Applicant</p>
+
+    <div class="field" data-required="true">
+      <label for="fullName">Full Name <span class="req">*</span></label>
+      <input type="text" id="fullName" name="fullName" placeholder="e.g. Ravi Kumar">
+      <p class="error-msg">Please enter your full name.</p>
+    </div>
+
+    <div class="row-2">
+      <div class="field" data-required="true">
+        <label for="email">Email Address <span class="req">*</span></label>
+        <input type="email" id="email" name="email" placeholder="you@example.com">
+        <p class="error-msg">Please enter a valid email address.</p>
+      </div>
+      <div class="field" data-required="true">
+        <label for="phone">Phone Number <span class="req">*</span></label>
+        <input type="tel" id="phone" name="phone" placeholder="+91 98765 43210">
+        <p class="error-msg">Please enter a valid phone number.</p>
+      </div>
+    </div>
+
+    <p class="section-label">Role &amp; Background</p>
+
+    <div class="row-2">
+      <div class="field" data-required="true">
+        <label for="jobPosition">Job Position <span class="req">*</span></label>
+        <select id="jobPosition" name="jobPosition">
+          <option value="" selected disabled>Select a position</option>
+          <option>Software Engineer</option>
+          <option>Product Manager</option>
+          <option>UI/UX Designer</option>
+          <option>Data Analyst</option>
+          <option>Marketing Associate</option>
+          <option>Sales Executive</option>
+          <option>Customer Support</option>
+          <option>Other</option>
+        </select>
+        <p class="error-msg">Please select a position.</p>
+      </div>
+      <div class="field" data-required="true">
+        <label for="experience">Years of Experience <span class="req">*</span></label>
+        <input type="number" id="experience" name="experience" min="0" step="0.5" placeholder="e.g. 3">
+        <p class="error-msg">Please enter your years of experience.</p>
+      </div>
+    </div>
+
+    <div class="field" data-required="true">
+      <label for="qualification">Highest Qualification <span class="req">*</span></label>
+      <select id="qualification" name="qualification">
+        <option value="" selected disabled>Select your highest qualification</option>
+        <option>High School</option>
+        <option>Diploma</option>
+        <option>Bachelor's Degree</option>
+        <option>Master's Degree</option>
+        <option>Doctorate (PhD)</option>
+        <option>Other</option>
+      </select>
+      <p class="error-msg">Please select your highest qualification.</p>
+    </div>
+
+    <div class="field" data-required="true">
+      <label for="skills">Skills <span class="req">*</span></label>
+      <textarea id="skills" name="skills" placeholder="List relevant skills, tools, and technologies..."></textarea>
+      <p class="error-msg">Please describe your skills.</p>
+    </div>
+
+    <p class="section-label">Links &amp; Attachments</p>
+
+    <div class="row-2">
+      <div class="field">
+        <label for="linkedin">LinkedIn Profile <span class="opt">(optional)</span></label>
+        <input type="url" id="linkedin" name="linkedin" placeholder="linkedin.com/in/yourname">
+      </div>
+      <div class="field">
+        <label for="github">GitHub Profile <span class="opt">(optional)</span></label>
+        <input type="url" id="github" name="github" placeholder="github.com/yourname">
+      </div>
+    </div>
+
+    <div class="field" data-required="true">
+      <label for="resume">Resume <span class="req">*</span></label>
+      <div class="file-drop" id="fileDrop">
+        <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx">
+        <div>Click to upload, or drag a file here</div>
+        <div class="hint">PDF or Word document, up to 10MB</div>
+        <div class="filename" id="fileName"></div>
+      </div>
+      <p class="error-msg">Please attach your resume.</p>
+    </div>
+
+    <div class="submit-row">
+      <p class="fine-print">By submitting, you confirm the details above are accurate to the best of your knowledge.</p>
+      <button type="submit" class="submit">Submit Application</button>
+    </div>
+  </form>
+
+  <div class="success-panel" id="successPanel">
+    <div class="stamp">Received</div>
+    <h2>Application submitted</h2>
+    <p>Thank you — your docket has been filed. We'll be in touch by email.</p>
+  </div>
+</div>
+
+<script>
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  document.getElementById('refNo').textContent = 'JA-' + Math.floor(1000 + Math.random()*9000);
+
+  const fileDrop = document.getElementById('fileDrop');
+  const fileInput = document.getElementById('resume');
+  const fileNameEl = document.getElementById('fileName');
+
+  fileDrop.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => {
+    if(fileInput.files.length){
+      fileNameEl.textContent = '✓ ' + fileInput.files[0].name;
+      fileNameEl.style.display = 'block';
+    }
+  });
+  ['dragover','dragenter'].forEach(evt => fileDrop.addEventListener(evt, e => {
+    e.preventDefault();
+    fileDrop.style.borderColor = 'var(--amber-deep)';
+  }));
+  ['dragleave','drop'].forEach(evt => fileDrop.addEventListener(evt, e => {
+    e.preventDefault();
+    fileDrop.style.borderColor = 'var(--line)';
+  }));
+  fileDrop.addEventListener('drop', e => {
+    if(e.dataTransfer.files.length){
+      fileInput.files = e.dataTransfer.files;
+      fileNameEl.textContent = '✓ ' + e.dataTransfer.files[0].name;
+      fileNameEl.style.display = 'block';
+    }
+  });
+
+  const form = document.getElementById('appForm');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    let valid = true;
+
+    const check = (id, condition) => {
+      const field = document.getElementById(id).closest('.field');
+      if(!condition){
+        field.classList.add('invalid');
+        valid = false;
+      } else {
+        field.classList.remove('invalid');
+      }
+    };
+
+    check('fullName', document.getElementById('fullName').value.trim().length > 0);
+    check('email', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(document.getElementById('email').value.trim()));
+    check('phone', document.getElementById('phone').value.trim().length >= 7);
+    check('jobPosition', document.getElementById('jobPosition').value !== '');
+    check('experience', document.getElementById('experience').value !== '');
+    check('qualification', document.getElementById('qualification').value !== '');
+    check('skills', document.getElementById('skills').value.trim().length > 0);
+    check('resume', fileInput.files.length > 0);
+
+    if(valid){
+      form.style.display = 'none';
+      document.getElementById('successPanel').style.display = 'block';
+    } else {
+      const firstInvalid = form.querySelector('.invalid');
+      if(firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+</script>
+
+</body>
+</html>
